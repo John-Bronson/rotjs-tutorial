@@ -1,3 +1,6 @@
+//var Pedro = require('./pedro.js')
+import Pedro from './pedro.js'
+
 var Game = {
   display: null,
 
@@ -10,7 +13,6 @@ var Game = {
     scheduler.add(this.player, true);
     this.engine = new ROT.Engine(scheduler);
     this.engine.start();
-
   }
 }
 
@@ -45,6 +47,11 @@ Player.prototype.handleEvent = function (e) {
 
   var code = e.keyCode;
 
+  if (code == 13 || code == 32) { //box searching by space or enter
+    this._checkBox();
+    return;
+  }
+
   if (!(code in keyMap)) {
     console.log('unknown key!')
     return;
@@ -65,9 +72,22 @@ Player.prototype.handleEvent = function (e) {
   Game.engine.unlock();
 }
 
-Game.player = null;
+Player.prototype._checkBox = function () {
+  var key = this._x + "," + this._y;
+  if (Game.map[key] != "*") {
+    alert("There is no box here!");
+  } else if (key == Game.ananas) {
+    alert("Hooray! You found an ananas and won this game.");
+    Game.engine.lock();
+    window.removeEventListener("keydown", this);
+  } else {
+    alert("This box is empty :-(");
+  }
+}
 
+Game.player = null;
 Game.map = {};
+
 Game._generateMap = function () {
   var digger = new ROT.Map.Digger();
   var freeCells = [];
@@ -91,6 +111,7 @@ Game._generateBoxes = function (freeCells) {
     var index = Math.floor(ROT.RNG.getUniform() * freeCells.length);
     var key = freeCells.splice(index, 1)[0];
     this.map[key] = "*";
+    if (!i) { this.ananas = key; } /* first box contains an ananas */
   }
 };
 
@@ -111,3 +132,5 @@ Game._createPlayer = function (freeCells) {
   var y = parseInt(parts[1]);
   this.player = new Player(x, y);
 };
+
+Game.init()
